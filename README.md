@@ -1,5 +1,7 @@
 # kanso-json
 
+[![ci](https://github.com/ClayShentrup/kanso-json/actions/workflows/ci.yml/badge.svg)](https://github.com/ClayShentrup/kanso-json/actions/workflows/ci.yml)
+
 A complete JSON decoder and encoder written in [kanso](https://kanso-lang.dev) — the first real library in the language.
 
 ```
