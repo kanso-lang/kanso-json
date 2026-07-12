@@ -1,0 +1,19 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ClayShentrup/kanso
+          path: kanso
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --manifest-path kanso/Cargo.toml
+      - run: ./kanso/target/release/kanso test json.kso
