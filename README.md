@@ -5,7 +5,7 @@
 A complete JSON decoder and encoder written in [kanso](https://kanso-lang.dev) — the first real library in the language.
 
 ```
-decode "{\"a\": [1, 2.5, null]}"     // ["a": [1 2.5 (json_null true)]]
+decode "{\"a\": [1, 2.5, null]}"     // ["a": [1 2.5 json_null]]
 encode ["a": true "b": [1 2]]        // {"a":true,"b":[1,2]}
 ```
 
