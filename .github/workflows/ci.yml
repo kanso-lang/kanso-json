@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
-          repository: ClayShentrup/kanso
+          repository: kanso-lang/kanso
           path: kanso
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build --release --manifest-path kanso/Cargo.toml
