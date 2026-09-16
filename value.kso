@@ -25,6 +25,9 @@ fn array_open _ none p
 fn array_open cs _ p
   array_items cs p []
 
+fn array_step _ (err e) _
+  err e
+
 fn array_step cs (parsed p v) acc
   acc2 = push acc v
   p2 = skip_ws cs p
@@ -32,6 +35,9 @@ fn array_step cs (parsed p v) acc
 
 fn bad_value_char c p
   fail p "unexpected character `{text/utf8 [c]}`"
+
+fn obj_colon _ (err e) _ _
+  err e
 
 fn obj_colon cs p k acc
   obj_value cs (parse_value cs p) k acc
@@ -51,6 +57,9 @@ fn obj_delim _ c p _
 fn obj_items cs p acc
   p2 = skip_ws cs p
   obj_key_start cs cs[p2] p2 acc
+
+fn obj_key _ (err e) _
+  err e
 
 fn obj_key cs (parsed p k) acc
   p2 = skip_ws cs p
@@ -73,6 +82,9 @@ fn obj_open _ none p
 
 fn obj_open cs _ p
   obj_items cs p {}
+
+fn obj_value _ (err e) _ _
+  err e
 
 fn obj_value cs (parsed p v) k acc
   acc2 = put acc k v

@@ -69,6 +69,9 @@ fn entry_onto acc (entry k v)
 fn finish _ none
   err (parse_failure 0 "unexpected end of input")
 
+fn finish _ (err e)
+  err e
+
 fn finish cs (parsed p v)
   p2 = skip_ws cs p
   if (p2 > length cs) v (fail p2 "unexpected trailing characters")

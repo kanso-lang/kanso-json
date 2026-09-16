@@ -3,29 +3,29 @@ import "std/text"
 
 # `when_failed` hands back the bare reason, so this names a reason type and
 # never an err — json cannot rescue what json raised.
-test_decode_array = decode "[1, 2, 3]" == [1 2 3]
+test_decode_array = same? (decode "[1, 2, 3]") [1 2 3]
 
 test_decode_bool = decode "true"
 
-test_decode_escapes = decode "\"a\\n\\\"b\\\"\"" == "a\n\"b\""
+test_decode_escapes = same? (decode "\"a\\n\\\"b\\\"\"") "a\n\"b\""
 
-test_decode_float = decode "3.25" == 3.25
+test_decode_float = same? (decode "3.25") 3.25
 
-test_decode_int = decode "42" == 42
+test_decode_int = same? (decode "42") 42
 
 test_decode_nested =
   decoded = decode "\{\"a\": [1, \{\"b\": null}]}"
-  decoded == { "a":[1 { "b":json_null }] }
+  same? decoded { "a":[1 { "b":json_null }] }
 
-test_decode_object = decode "\{\"a\": 1, \"b\": 2}" == { "a":1 "b":2 }
+test_decode_object = same? (decode "\{\"a\": 1, \"b\": 2}") { "a":1 "b":2 }
 
-test_decode_string = decode "\"hello\"" == "hello"
+test_decode_string = same? (decode "\"hello\"") "hello"
 
-test_decode_surrogate_pair = decode "\"\\ud83c\\udf8c\"" == "🎌"
+test_decode_surrogate_pair = same? (decode "\"\\ud83c\\udf8c\"") "🎌"
 
-test_decode_unicode = decode "\"\\u00e9\"" == "é"
+test_decode_unicode = same? (decode "\"\\u00e9\"") "é"
 
-test_decode_whitespace = decode "  [ 1 , 2 ]  " == [1 2]
+test_decode_whitespace = same? (decode "  [ 1 , 2 ]  ") [1 2]
 
 test_encode_empty_list = encode [] == "[]"
 
@@ -51,4 +51,19 @@ test_error_trailing =
 
 test_roundtrip =
   text = "\{\"a\":[1,2.5,\"x\"],\"b\":null}"
-  encode (decode text) == text
+  re_encoded? (decode text) text
+
+# `decode` answers a value or an err, and an err where a value is wanted is
+# refused at check. These two dispatch on it once each, so a decode that
+# failed reads as a failed test rather than as a comparison nobody can make.
+fn re_encoded? (err _) _
+  false
+
+fn re_encoded? v want
+  encode v == want
+
+fn same? (err _) _
+  false
+
+fn same? got want
+  got == want
