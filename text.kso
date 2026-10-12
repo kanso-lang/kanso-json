@@ -111,12 +111,22 @@ fn str_escape _ none p _
 fn str_escape _ c p _
   fail p "invalid escape `\\{text/utf8 [c]}`"
 
+# four hex digits, read one at a time so a bad one stops the reading there:
+# a digit is dispatched on before it is added, because an err is not a number
 fn str_hex4 cs p
-  h1 = hex_digit cs[p]
-  h2 = hex_digit (cs[p + 1])
-  h3 = hex_digit (cs[p + 2])
-  h4 = hex_digit (cs[p + 3])
-  h1 * 4096 + h2 * 256 + h3 * 16 + h4
+  hex_step cs (p + 1) 3 (hex_digit cs[p])
+
+fn hex_step _ _ _ e@(err _)
+  e
+
+fn hex_step cs p left n
+  if (left == 0) n (hex_add cs (p + 1) (left - 1) n (hex_digit cs[p]))
+
+fn hex_add _ _ _ _ e@(err _)
+  e
+
+fn hex_add cs p left n d
+  hex_step cs p left (n * 16 + d)
 
 fn str_low _ _ _ _ (err e)
   err e
@@ -142,7 +152,12 @@ fn str_surrogate cs p acc high
     str_pair cs p acc high
 
 fn str_unicode cs p acc
-  code = str_hex4 cs (p + 2)
+  unicode_at cs p acc (str_hex4 cs (p + 2))
+
+fn unicode_at _ _ _ e@(err _)
+  e
+
+fn unicode_at cs p acc code
   if (code < 55296 or 57343 < code)
     str_chars cs (p + 6) (text/append acc (text/from_code code))
     str_surrogate cs p acc code
