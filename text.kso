@@ -119,20 +119,8 @@ fn str_hex4 cs p
 fn hex_three cs p
   hex_on (hex_on (hex_digit cs[p]) (hex_digit cs[p + 1])) (hex_digit cs[p + 2])
 
-fn hex_on e@(err _) (err _)
-  e
-
-fn hex_on e@(err _) _
-  e
-
-fn hex_on _ e@(err _)
-  e
-
 fn hex_on n d
   n * 16 + d
-
-fn str_low _ _ _ _ (err e)
-  err e
 
 fn str_low cs p acc high low
   scalar = 65536 + (high - 55296) * 1024 + (low - 56320)
@@ -157,9 +145,6 @@ fn str_surrogate cs p acc high
 fn str_unicode cs p acc
   unicode_at cs p acc (str_hex4 cs (p + 2))
 
-fn unicode_at _ _ _ e@(err _)
-  e
-
 fn unicode_at cs p acc code
   if (code < 55296 or 57343 < code)
     str_chars cs (p + 6) (text/append acc (text/from_code code))
@@ -177,7 +162,7 @@ fn string_at _ none _ p
 fn string_at cs _ start p
   string_scan cs start (p + 1)
 
-fn string_ok p (err _)
+fn string_ok p _:<some>effect
   err (parse_failure p "invalid utf-8 in string")
 
 fn string_ok _ v

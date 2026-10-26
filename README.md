@@ -9,11 +9,11 @@ decode "{\"a\": [1, 2.5, null]}"     // ["a": [1 2.5 json_null]]
 encode ["a": true "b": [1 2]]        // {"a":true,"b":[1,2]}
 ```
 
-- **decode** — full JSON grammar: objects (string-keyed maps), arrays (lists), strings with every escape including `\uXXXX`, ints and floats, `true`/`false`/`null`. Failures are values: `err (parse_failure position reason)` with 1-based character positions, propagating automatically until an overload handles them.
+- **decode** — full JSON grammar: objects (string-keyed maps), arrays (lists), strings with every escape including `\uXXXX`, ints and floats, `true`/`false`/`null`. Text that is not JSON answers `none`.
+- **decode!** — the same parse for text you know is JSON. It answers a box holding the value, or a failure carrying `parse_failure position reason` with 1-based byte positions, which rides to the endpoint or to a rescue in another package.
 - **encode** — canonical output: sorted object keys, compact separators, escaped strings. Encoding is dispatch: one `encode` overload per JSON-visible type.
-- **must** — converts an allowed failure into a `defect` for the "this failing is a bug" case: `must (decode config)`.
 
-The parser has no error-handling code. Kanso's auto-propagation carries every failure past the continuation functions whose patterns don't match it; the happy path is the only path written. Every design decision this library forced on the language is documented at https://kanso-lang.dev/decisions.html.
+The parser has no error-handling code. Kanso's auto-propagation carries every failure past the continuation functions it reaches; the happy path is the only path written. Every design decision this library forced on the language is documented at https://kanso-lang.dev/decisions.html.
 
 ## running the tests
 

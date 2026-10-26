@@ -42,27 +42,29 @@ test_encode_nested =
   encode value == "\{\"a\":true,\"b\":[1,2]}"
 
 test_error_position =
-  decoded = decode "[1, nope]"
+  decoded = decode! "[1, nope]"
   testing/when_failed decoded (r -> r.position == 5)
 
 test_error_trailing =
-  decoded = decode "1 x"
+  decoded = decode! "1 x"
   testing/when_failed decoded (r -> r.position == 3)
+
+test_plain_decode_answers_none = decode "[1, nope]" == none
 
 test_roundtrip =
   text = "\{\"a\":[1,2.5,\"x\"],\"b\":null}"
   re_encoded? (decode text) text
 
-# `decode` answers a value or an err, and an err where a value is wanted is
+# `decode` answers a value or none, and a none where a value is wanted is
 # refused at check. These two dispatch on it once each, so a decode that
 # failed reads as a failed test rather than as a comparison nobody can make.
-fn re_encoded? (err _) _
+fn re_encoded? none _
   false
 
 fn re_encoded? v want
   encode v == want
 
-fn same? (err _) _
+fn same? none _
   false
 
 fn same? got want
