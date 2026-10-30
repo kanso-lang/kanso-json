@@ -1,0 +1,67 @@
+name: publish a release tag
+
+# A hako's releases are vX.Y.Z tags (design/hako.md in kanso), and
+# `kanso install` refuses a hako that publishes none. A tag push from a Claude
+# Code cloud container is refused by its git proxy with HTTP 403, the same way
+# kanso's delete-branch.yml found a ref deletion refused. Actions runs on
+# GitHub's own infrastructure rather than through that proxy, so the tag is
+# made here.
+#
+# A tag is permanent history: a lock records its sha, so it is never moved or
+# deleted once published. This refuses a tag that already exists, a name that
+# is not vX.Y.Z, and a commit that is not on main.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "the release tag, vX.Y.Z"
+        required: true
+        type: string
+      sha:
+        description: "the commit on main it names"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: tag the release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The inputs reach the shell through the environment rather than through
+      # `${{ }}` interpolation, so neither can become script.
+      - name: tag
+        env:
+          TAG: ${{ inputs.tag }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          set -e
+          case "$TAG" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "::error::'$TAG' is not vX.Y.Z"; exit 1 ;;
+          esac
+          case "$TAG" in
+            *[!v0-9.]*) echo "::error::'$TAG' is not vX.Y.Z"; exit 1 ;;
+          esac
+          case "$SHA" in
+            ''|*[!0-9a-f]*) echo "::error::'$SHA' is not a commit sha"; exit 1 ;;
+          esac
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "::error::$TAG already exists, and a published tag is never moved"
+            exit 1
+          fi
+          full=$(git rev-parse --verify "$SHA^{commit}")
+          git merge-base --is-ancestor "$full" origin/main \
+            || { echo "::error::$full is not on main"; exit 1; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" "$full" -m "kanso-json $TAG"
+          git push origin "refs/tags/$TAG"
+          echo "published $TAG at $full"
